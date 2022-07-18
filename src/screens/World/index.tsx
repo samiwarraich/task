@@ -5,10 +5,10 @@ import { RootState } from "@src/redux/store";
 import styles from "./styles";
 
 const World = () => {
-  const text = useSelector((state: RootState) => state.text.value);
+  const { value } = useSelector((state: RootState) => state.text);
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>{text}</Text>
+      <Text style={styles.text}>{value}</Text>
     </View>
   );
 };
