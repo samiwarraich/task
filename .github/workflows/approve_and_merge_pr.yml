@@ -4,26 +4,28 @@ on:
     types: [opened]
 
 jobs:
-  approve_and_merge_owner_dependabot_pr:
+  merge_owner_dependabot_pr_after_checks:
     runs-on: ubuntu-latest
-    if: github.actor == github.event.repository.owner.login || github.actor == 'dependabot[bot]' || github.actor == 'dependabot-preview[bot]'
+    if: github.event.check_suite.conclusion == 'success'
     steps:
-      - name: Approve PR
+      - name: Get PR info
+        id: pr_info
         uses: actions/github-script@v5
         with:
           script: |
-            github.rest.pulls.createReview({
+            const { data: pr } = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: context.issue.number,
-              event: 'APPROVE'
+              head: context.repo.owner + ':' + context.ref.replace('refs/heads/', '')
             })
+            return pr[0]
       - name: Merge PR
+        if: steps.pr_info.outputs.result.user.login == github.event.repository.owner.login || steps.pr_info.outputs.result.user.login == 'dependabot[bot]' || steps.pr_info.outputs.result.user.login == 'dependabot-preview[bot]'
         uses: actions/github-script@v5
         with:
           script: |
             github.rest.pulls.merge({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: context.issue.number
+              pull_number: steps.pr_info.outputs.result.number
             })
