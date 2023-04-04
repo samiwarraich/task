@@ -31,10 +31,17 @@ jobs:
                   pull_number: context.issue.number,
                   event: 'APPROVE'
                 })
-                github.pulls.merge({
+                await github.pulls.merge({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
-                  pull_number: context.issue.number
+                  pull_number: context.issue.number,
+                  commit_title: 'Automatically merged by GitHub Actions',
+                  commit_message: 'This pull request was automatically merged by a GitHub Actions workflow.'
+                })
+                await github.git.deleteRef({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: `heads/${pr.data.head.ref}`
                 })
               }
             }
