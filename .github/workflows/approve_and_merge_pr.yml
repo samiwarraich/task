@@ -11,7 +11,7 @@ jobs:
       - name: Approve PR
         uses: actions/github-script@v5
         with:
-          github-token: ${{ secrets.AUTO_REVIEW_AND_MERGE_PR }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           script: |
             github.rest.pulls.createReview({
               owner: context.repo.owner,
@@ -22,7 +22,7 @@ jobs:
       - name: Merge PR
         uses: actions/github-script@v5
         with:
-          github-token: ${{ secrets.AUTO_REVIEW_AND_MERGE_PR }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           script: |
             github.rest.pulls.merge({
               owner: context.repo.owner,
