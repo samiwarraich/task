@@ -1,7 +1,7 @@
 name: Automerge
 on:
-  check_suite:
-    types: [completed]
+  pull_request:
+    types: [synchronize]
 jobs:
   automerge:
     runs-on: ubuntu-latest
@@ -11,20 +11,20 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            const checkSuite = await github.checks.getSuite({
+            const pr = await github.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              check_suite_id: context.payload.check_suite.id
+              pull_number: context.issue.number
             });
-            const allChecksPassed = checkSuite.data.check_runs.every(check => {
-              return check.name == 'review' || check.conclusion == 'success';
+            const checkSuite = await github.checks.listSuitesForRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: pr.data.head.sha
+            });
+            const allChecksPassed = checkSuite.data.check_suites.every(suite => {
+              return suite.app.name == 'review' || suite.conclusion == 'success';
             });
             if (allChecksPassed) {
-              const pr = await github.pulls.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: context.issue.number
-              });
               if (pr.data.user.login == context.repo.owner) {
                 github.pulls.createReview({
                   owner: context.repo.owner,
