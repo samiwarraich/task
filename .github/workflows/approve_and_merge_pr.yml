@@ -8,10 +8,23 @@ jobs:
     runs-on: ubuntu-latest
     if: github.actor == github.event.repository.owner.login || github.actor == 'dependabot[bot]' || github.actor == 'dependabot-preview[bot]'
     steps:
+      - name: Approve PR
+        uses: actions/github-script@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.AUTO_REVIEW_AND_MERGE_PR }}
+        with:
+          script: |
+            github.rest.pulls.createReview({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              event: 'APPROVE'
+            })
       - name: Merge PR
         uses: actions/github-script@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.AUTO_REVIEW_AND_MERGE_PR }}
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           script: |
             github.rest.pulls.merge({
               owner: context.repo.owner,
